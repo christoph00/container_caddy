@@ -4,9 +4,6 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'  # every day at midnight
-
 jobs:
   build:
     name: Build image using Buildah
@@ -14,10 +11,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [ amd64, arm64 ]
+        arch: [ amd64 ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Log in to ghcr.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_PAT }}
+          registry: ghcr.io
 
       - name: Install qemu dependency
         run: |
@@ -28,7 +32,7 @@ jobs:
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-          image: container_caddy
+          image: christoph00/container_caddy
           tags: ${{ matrix.arch }}
           arch: ${{ matrix.arch }}
           oci: true
@@ -39,7 +43,4 @@ jobs:
         with:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
-          registry: ghcr.io/${{ github.repository_owner }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
+          registry: ghcr.io
