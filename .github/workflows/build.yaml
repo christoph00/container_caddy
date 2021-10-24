@@ -19,8 +19,8 @@ jobs:
       - name: Log in to ghcr.io
         uses: redhat-actions/podman-login@v1
         with:
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_PAT }}
           registry: ghcr.io
 
       - name: Install qemu dependency
